@@ -42,16 +42,12 @@ rack_hole_y2 = hole_positions[1];  // Last (bottom-most) hole
 
 function raw_mounting_holes(nU) = let(
     full_Us = ceil(nU),
-    max_height = nU * 44.45
+    hole_offsets = [6.35, 22.225, 38.1]  // Positions within each U
 )
 [
     for (u = [0 : full_Us - 1])
-        let (offset = u * 44.45)
-        [
-            offset + 15.875,   // Middle hole
-            offset + 31.750    // Bottom hole
-        ]
-    
+        for (offset = hole_offsets)
+            u * 44.45 + offset
 ];
 
 function filter_holes(nested_holes, max_height) = let(
@@ -63,10 +59,10 @@ function filter_holes(nested_holes, max_height) = let(
             for (h = pair)
                 h
     ],
-    // Filter out any values > max_height
+    // Filter out any values > max_height make sure it leave at least 3mm on the border
     filtered = [
         for (h = flat)
-            if (h <= max_height) h
+            if (h <= max_height-6.35) h
     ],
     first = filtered[0],
     last  = filtered[len(filtered) - 1]
@@ -122,17 +118,17 @@ module flat_bracket_2d() {
         // Base outline: main plate + flange
         union() {
             // Main vertical plate
-            square([width, height], center = false);
+            translate([-width,0]) square([width, height], center = false);
 
-            // Flange (unfolded to the right of the main plate)
-            translate([width, 0]) square([flange_depth, height], center = false);
+            // Flange (unfolded to the right of the main plate) 
+            square([flange_depth, height], center = false);
         }
 
         // Mounting holes
         for (i = [0 : (holes == "Four" ? 1 : 0)]) {
-            translate([mount_setback + i * mount_hole_x_spacing, (height - mount_hole_y_spacing)/2, 0])
+            translate([-1*(mount_setback + i * mount_hole_x_spacing), (height - mount_hole_y_spacing)/2, 0])
                 cylinder(h=thickness+1, d=mount_hole_dia, $fn=30);
-            translate([mount_setback + i * mount_hole_x_spacing, (height - mount_hole_y_spacing)/2 + mount_hole_y_spacing, 0])
+            translate([-1*(mount_setback + i * mount_hole_x_spacing), (height - mount_hole_y_spacing)/2 + mount_hole_y_spacing, 0])
                 cylinder(h=thickness+1, d=mount_hole_dia, $fn=30);
         }
 
@@ -158,7 +154,7 @@ module flat_bracket_2d() {
     // Offset 1mm outside the part on both sides
 
     // Left marker (1mm to the left of the bend line)
-    translate([width , 0]) {
+    translate([0 , 0]) {
         // Vertical line segment, 15mm long, centered vertically
         translate([0, -1*(bend_mark_len+1)]) {
             color("red")square([0.1, bend_mark_len], center = false); // Solid line
@@ -166,7 +162,7 @@ module flat_bracket_2d() {
     }
 
     // Right marker (1mm to the right of the bend line)
-    translate([width + 1, 0]) {
+    translate([0, 0]) {
         translate([0, height+1]) {
             color("red")square([0.1, bend_mark_len], center = false); // Solid line
         }
