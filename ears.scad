@@ -8,9 +8,9 @@ height = 70; // [50:100] // Height of bracket
 width = 70; // [20:100] // Width of central bracket portion
 
 // == Rack Mounting Parameters ==
-Total_rack_width = 482.60; // Total width of rack (19")
+Total_rack_width = 482.60 - 2; // Total width of rack (19") - 1mm either side for clearance
 device_width = 254; // [200:482.60] // Width of device
-flange_depth = (Total_rack_width - device_width)/2; // Depth of flange
+flange_depth = ((Total_rack_width - device_width)/2)-thickness; // Depth of flange 
 
 // == Hole and Slot Sizes ==
 mount_hole_dia = 4; // [3:6] // Mounting hole diameter
@@ -28,7 +28,7 @@ slot_offset_from_edge = 3; // Slot offset from flange edge
 bend_mark_len = 15; //[1:20] // length of bend marker for dxf export
 
 // == Derived Parameters ==
-slot_center_z = flange_depth - (3 + slot_len); // Position of slot center along flange
+slot_center_z = flange_depth - (slot_offset_from_edge + slot_len); // Position of slot center along flange
 u_height = round(((height + 0.794)/44.45)*2)/2; //get teh u number to 1 decimal point
 hole_positions = get_mounting_holes(u_height);
 echo("hole positions: ",hole_positions);
